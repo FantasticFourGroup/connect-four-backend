@@ -5,13 +5,14 @@ mod utils;
 
 #[derive(Deserialize)]
 struct Request {
-  grid: Vec<Vec<u8>>,
-  turn: u8
+  grid: Vec<Vec<usize>>,
+  depth: usize,
+  turn: usize
 }
 
 #[derive(Serialize)]
 struct Response {
-  choice: u8
+  choice: usize
 }
 
 #[get("/")]
@@ -25,10 +26,14 @@ async fn echo(req_body: String) -> impl Responder {
 }
 
 async fn solve_board(request: web::Json<Request>) -> Result<String> {
-  let grid: Vec<Vec<u8>> = request.grid.clone();
-  let turn: u8 = request.turn;
-  let choice = utils::minimax(grid, turn);
-  Ok(serde_json::to_string(&Response { choice }).unwrap())
+  let grid: Vec<Vec<usize>> = request.grid.clone();
+  let depth: usize = request.depth;
+  let turn: usize = request.turn;
+  let choice = utils::solve_board(grid, depth, turn);
+  match choice {
+    Some(choice) => Ok(format!("{}", choice)),
+    None => Ok(format!("None"))
+  }
 }
 
 

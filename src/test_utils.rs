@@ -103,4 +103,6 @@ fn test_calc_heuristic() {
   assert_eq!(calc_heuristic(&grid3, 2), 6);
   let grid4 = vec![vec![0, 0, 0, 0], vec![0, 2, 0, 0], vec![0, 2, 0, 1], vec![0, 2, 2, 1]];
   assert_eq!(calc_heuristic(&grid4, 1), -7);
+  let grid5 = vec![vec![0, 0, 0, 0], vec![0, 0, 0, 0], vec![0, 1, 0, 0], vec![0, 2, 2, 0]];
+  assert_eq!(calc_heuristic(&grid5, 1), -4);
 }

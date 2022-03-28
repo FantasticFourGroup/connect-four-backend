@@ -166,7 +166,7 @@ fn check_game_over(grid: &Vec<Vec<usize>>) -> bool {
   false
 }
 
-fn minimax(grid: Vec<Vec<usize>>, depth: usize, turn: usize) -> (Option<usize>, isize) {
+fn minimax(grid: Vec<Vec<usize>>, depth: usize, turn: usize, orig_player: usize) -> (Option<usize>, isize) {
   let valid_cols = get_valid_columns(&grid);
   if valid_cols.len() == 0 {
     return (None, 0);
@@ -185,17 +185,17 @@ fn minimax(grid: Vec<Vec<usize>>, depth: usize, turn: usize) -> (Option<usize>, 
       }
     }
     else {
-      return (None, calc_heuristic(&grid, turn));
+      return (None, calc_heuristic(&grid, orig_player));
     }
   }
   if turn == 1 {
-    let mut best_score: isize = -100000;
+    let mut best_score: isize = 100000;
     let mut best_col = valid_cols[0];
     for col in valid_cols {
       let mut new_grid = grid.clone();
       drop_piece(&mut new_grid, col, turn);
-      let (_, new_score) = minimax(new_grid, depth - 1, 2);
-      if new_score > best_score {
+      let (_, new_score) = minimax(new_grid, depth - 1, 2, orig_player);
+      if new_score < best_score {
         best_score = new_score;
         best_col = col;
       }
@@ -203,15 +203,14 @@ fn minimax(grid: Vec<Vec<usize>>, depth: usize, turn: usize) -> (Option<usize>, 
     return (Some(best_col), best_score);
   }
   else if turn == 2 {
-    let mut best_score: isize = 100000;
+    let mut best_score: isize = -100000;
     let mut best_col = valid_cols[0];
     for col in valid_cols {
       let mut new_grid = grid.clone();
       drop_piece(&mut new_grid, col, turn);
-      let (_, new_score) = minimax(new_grid, depth - 1, 1);
-      let negated_score = -new_score;
-      if negated_score < best_score {
-        best_score = negated_score;
+      let (_, new_score) = minimax(new_grid, depth - 1, 1, orig_player);
+      if new_score > best_score {
+        best_score = new_score;
         best_col = col;
       }
     }
@@ -221,7 +220,7 @@ fn minimax(grid: Vec<Vec<usize>>, depth: usize, turn: usize) -> (Option<usize>, 
 }
 
 pub fn solve_board(grid: Vec<Vec<usize>>, depth: usize, turn: usize) -> Option<usize> {
-  let (col, _) = minimax(grid, depth, turn);
+  let (col, _) = minimax(grid, depth, turn, turn);
   col
 }
 

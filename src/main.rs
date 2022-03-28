@@ -1,4 +1,5 @@
 use actix_web::{web, get, post, App, HttpResponse, HttpServer, Responder, Result};
+use actix_cors::Cors;
 use serde::{Deserialize, Serialize};
 
 mod utils;
@@ -40,10 +41,15 @@ async fn solve_board(request: web::Json<Request>) -> Result<String> {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
   HttpServer::new(|| {
+    let cors = Cors::default()
+      .allow_any_origin()
+      .allow_any_method();
+
     App::new()
+      .wrap(cors)
       .service(hello)
       .service(echo)
-      .route("/solve-board", web::post().to(solve_board))
+      .service(web::resource("/solve-board").route(web::post().to(solve_board)))
   })
   .bind(("0.0.0.0", 8088))?
   .run()

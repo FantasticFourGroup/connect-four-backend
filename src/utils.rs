@@ -1,3 +1,5 @@
+use std::cmp;
+
 enum GameState {
   Win, 
   Lose,
@@ -191,7 +193,15 @@ fn is_draw(grid: &Vec<Vec<usize>>) -> bool {
   false
 }
 
-fn minimax(grid: Vec<Vec<usize>>, depth: usize, player_piece: usize, ai_piece: usize, is_mini: bool) -> (Option<usize>, isize, GameState) {
+fn minimax(
+  grid: Vec<Vec<usize>>, 
+  depth: usize, 
+  player_piece: usize,
+  ai_piece: usize,
+  is_mini: bool,
+  mut alpha: isize,
+  mut beta: isize
+) -> (Option<usize>, isize, GameState) {
   let valid_cols = get_valid_columns(&grid);
   if valid_cols.len() == 0 {
     return (None, 0, GameState::Draw);
@@ -214,29 +224,37 @@ fn minimax(grid: Vec<Vec<usize>>, depth: usize, player_piece: usize, ai_piece: u
     }
   }
   if is_mini {
-    let mut best_score: isize = 100000;
+    let mut best_score: isize = isize::MAX;
     let mut best_col = valid_cols[0];
     for col in valid_cols {
       let mut new_grid = grid.clone();
       drop_piece(&mut new_grid, col, player_piece);
-      let (_, new_score, _) = minimax(new_grid, depth - 1, player_piece, ai_piece, false);
+      let (_, new_score, _) = minimax(new_grid, depth - 1, player_piece, ai_piece, false, alpha, beta);
       if new_score < best_score {
         best_score = new_score;
         best_col = col;
+      }
+      beta = cmp::min(beta, best_score);
+      if beta <= alpha {
+        break;
       }
     }
     return (Some(best_col), best_score, GameState::Playing);
   }
   else {
-    let mut best_score: isize = -100000;
+    let mut best_score: isize = isize::MIN;
     let mut best_col = valid_cols[0];
     for col in valid_cols {
       let mut new_grid = grid.clone();
       drop_piece(&mut new_grid, col, ai_piece);
-      let (_, new_score, _) = minimax(new_grid, depth - 1, player_piece, ai_piece, true);
+      let (_, new_score, _) = minimax(new_grid, depth - 1, player_piece, ai_piece, true, alpha, beta);
       if new_score > best_score {
         best_score = new_score;
         best_col = col;
+      }
+      alpha = cmp::max(alpha, best_score);
+      if beta <= alpha {
+        break;
       }
     }
     return (Some(best_col), best_score, GameState::Playing);
@@ -256,7 +274,7 @@ pub fn solve_board(grid: Vec<Vec<usize>>, depth: usize, ai_piece: usize) -> (usi
 
   let mut grid_copy = grid.clone();
 
-  let (col, _, game_state) = minimax(grid, depth, player_piece, ai_piece, false);
+  let (col, _, game_state) = minimax(grid, depth, player_piece, ai_piece, false, isize::MIN, isize::MAX);
 
   match col {
     Some(c) => {

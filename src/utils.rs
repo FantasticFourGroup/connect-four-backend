@@ -1,3 +1,21 @@
+enum GameState {
+  Win, 
+  Lose,
+  Playing,
+  Draw
+}
+
+impl GameState {
+  fn to_string(&self) -> String {
+    match self {
+      GameState::Win => "Win".to_string(),
+      GameState::Lose => "Lose".to_string(),
+      GameState::Playing => "Playing".to_string(),
+      GameState::Draw => "Draw".to_string(),
+    }
+  }
+}
+
 fn valid_column(grid: &Vec<Vec<usize>>, col: usize) -> bool {
   grid[0][col] == 0
 }
@@ -166,62 +184,94 @@ fn check_game_over(grid: &Vec<Vec<usize>>) -> bool {
   false
 }
 
-fn minimax(grid: Vec<Vec<usize>>, depth: usize, turn: usize, orig_player: usize) -> (Option<usize>, isize) {
+fn is_draw(grid: &Vec<Vec<usize>>) -> bool {
+  if get_valid_columns(grid).len() == 0 {
+    return true;
+  }
+  false
+}
+
+fn minimax(grid: Vec<Vec<usize>>, depth: usize, player_piece: usize, ai_piece: usize, is_mini: bool) -> (Option<usize>, isize, GameState) {
   let valid_cols = get_valid_columns(&grid);
   if valid_cols.len() == 0 {
-    return (None, 0);
+    return (None, 0, GameState::Draw);
   }
   let is_game_over = check_game_over(&grid);
   if depth == 0 || is_game_over {
     if is_game_over {
-      if check_winner(&grid, 1) {
-        return (None, -1000000);
+      if check_winner(&grid, player_piece) {
+        return (None, -1000000, GameState::Win);
       }
-      else if check_winner(&grid, 2) {
-        return (None, 1000000);
+      else if check_winner(&grid, ai_piece) {
+        return (None, 1000000, GameState::Lose);
       }
       else {
-        return (None, 0);
+        return (None, 0, GameState::Draw);
       }
     }
     else {
-      return (None, calc_heuristic(&grid, orig_player));
+      return (None, calc_heuristic(&grid, ai_piece), GameState::Playing);
     }
   }
-  if turn == 1 {
+  if is_mini {
     let mut best_score: isize = 100000;
     let mut best_col = valid_cols[0];
     for col in valid_cols {
       let mut new_grid = grid.clone();
-      drop_piece(&mut new_grid, col, turn);
-      let (_, new_score) = minimax(new_grid, depth - 1, 2, orig_player);
+      drop_piece(&mut new_grid, col, player_piece);
+      let (_, new_score, _) = minimax(new_grid, depth - 1, player_piece, ai_piece, false);
       if new_score < best_score {
         best_score = new_score;
         best_col = col;
       }
     }
-    return (Some(best_col), best_score);
+    return (Some(best_col), best_score, GameState::Playing);
   }
-  else if turn == 2 {
+  else {
     let mut best_score: isize = -100000;
     let mut best_col = valid_cols[0];
     for col in valid_cols {
       let mut new_grid = grid.clone();
-      drop_piece(&mut new_grid, col, turn);
-      let (_, new_score) = minimax(new_grid, depth - 1, 1, orig_player);
+      drop_piece(&mut new_grid, col, ai_piece);
+      let (_, new_score, _) = minimax(new_grid, depth - 1, player_piece, ai_piece, true);
       if new_score > best_score {
         best_score = new_score;
         best_col = col;
       }
     }
-    return (Some(best_col), best_score);
+    return (Some(best_col), best_score, GameState::Playing);
   }
-  (None, 0)
 }
 
-pub fn solve_board(grid: Vec<Vec<usize>>, depth: usize, turn: usize) -> Option<usize> {
-  let (col, _) = minimax(grid, depth, turn, turn);
-  col
+pub fn solve_board(grid: Vec<Vec<usize>>, depth: usize, ai_piece: usize) -> (usize, String) {
+  let player_piece = if ai_piece == 1 { 2 } else { 1 };
+
+  if check_winner(&grid, player_piece) {
+    return (0, "Win".to_string());
+  }
+
+  if is_draw(&grid) {
+    return (0, "Draw".to_string());
+  }	
+
+  let mut grid_copy = grid.clone();
+
+  let (col, _, game_state) = minimax(grid, depth, player_piece, ai_piece, false);
+
+  match col {
+    Some(c) => {
+      drop_piece(&mut grid_copy, c, ai_piece);
+      if check_winner(&grid_copy, ai_piece) {
+        return (c, "Lose".to_string());
+      }
+      else {
+        return (c, game_state.to_string());
+      }
+    },
+    None => {
+      return (0, game_state.to_string());
+    }
+  }
 }
 
 #[cfg(test)]

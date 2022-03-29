@@ -13,7 +13,8 @@ struct Request {
 
 #[derive(Serialize)]
 struct Response {
-  choice: usize
+  choice: usize,
+  game_state: String
 }
 
 #[get("/")]
@@ -26,15 +27,16 @@ async fn echo(req_body: String) -> impl Responder {
   HttpResponse::Ok().body(req_body)
 }
 
-async fn solve_board(request: web::Json<Request>) -> Result<String> {
+async fn solve_board(request: web::Json<Request>) -> Result<impl Responder> {
   let grid: Vec<Vec<usize>> = request.grid.clone();
   let depth: usize = request.depth;
   let turn: usize = request.turn;
-  let choice = utils::solve_board(grid, depth, turn);
-  match choice {
-    Some(choice) => Ok(format!("{}", choice)),
-    None => Ok(format!("None"))
-  }
+  let (choice, game_state) = utils::solve_board(grid, depth, turn);
+  let response = Response {
+    choice,
+    game_state
+  };
+  Ok(HttpResponse::Ok().json(response))
 }
 
 

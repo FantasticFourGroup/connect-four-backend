@@ -106,3 +106,61 @@ fn test_calc_heuristic() {
   let grid5 = vec![vec![0, 0, 0, 0], vec![0, 0, 0, 0], vec![0, 1, 0, 0], vec![0, 2, 2, 0]];
   assert_eq!(calc_heuristic(&grid5, 1), -4);
 }
+
+#[test]
+fn test_solve_board() {
+  let board1 = vec![
+                vec![0, 0, 0, 0, 0, 0, 0], 
+                vec![0, 0, 0, 0, 0, 0, 0], 
+                vec![0, 0, 0, 0, 0, 0, 0],
+                vec![0, 0, 0, 0, 0, 0, 0], 
+                vec![0, 0, 0, 0, 0, 0, 0], 
+                vec![0, 0, 0, 1, 0, 0, 0]
+              ];
+  let (res, _) = solve_board(board1, 4, 2);
+  assert_eq!(res, 3);
+
+  let board2 = vec![
+                vec![0, 0, 0, 0, 0, 0, 0], 
+                vec![0, 0, 0, 0, 0, 0, 0], 
+                vec![0, 0, 0, 0, 0, 0, 0],
+                vec![0, 0, 0, 1, 0, 0, 0], 
+                vec![0, 0, 0, 2, 0, 0, 0], 
+                vec![0, 0, 0, 1, 0, 0, 0]
+              ];
+  let (res, _) = solve_board(board2, 4, 2);
+  assert_eq!(res, 3);
+
+  let board3 = vec![
+                vec![0, 0, 0, 0, 0, 0, 0], 
+                vec![0, 0, 0, 0, 0, 0, 0], 
+                vec![0, 0, 0, 2, 0, 0, 0],
+                vec![0, 0, 0, 1, 0, 0, 0], 
+                vec![0, 0, 0, 2, 0, 0, 0], 
+                vec![0, 0, 0, 1, 1, 0, 0]
+              ];
+  let (res, _) = solve_board(board3, 4, 2);
+  assert_eq!(res, 2);
+
+  let board4 = vec![
+                vec![0, 0, 0, 0, 0, 0, 0], 
+                vec![0, 0, 0, 0, 0, 0, 0], 
+                vec![0, 0, 0, 2, 0, 0, 0],
+                vec![0, 0, 0, 1, 0, 0, 0], 
+                vec![0, 0, 0, 2, 1, 0, 0], 
+                vec![0, 0, 2, 1, 1, 0, 0]
+              ];
+  let (res, _) = solve_board(board4, 4, 2);
+  assert_eq!(res, 4);
+
+  let board5 = vec![
+                vec![0, 0, 0, 0, 0, 0, 0], 
+                vec![0, 0, 0, 0, 0, 0, 0], 
+                vec![0, 0, 0, 2, 0, 0, 0],
+                vec![0, 0, 0, 1, 0, 0, 0], 
+                vec![0, 0, 0, 2, 1, 0, 0], 
+                vec![0, 0, 2, 1, 1, 1, 0]
+              ];
+  let (res, _) = solve_board(board5, 4, 2);
+  assert_eq!(res, 6);
+}

@@ -163,4 +163,16 @@ fn test_solve_board() {
               ];
   let (res, _) = solve_board(board5, 4, 2);
   assert_eq!(res, 6);
+
+  let grid6 = vec![
+                vec![2, 1, 1, 2, 1, 1, 0], 
+                vec![1, 2, 2, 1, 2, 2, 1], 
+                vec![2, 1, 1, 2, 1, 1, 2],
+                vec![1, 2, 2, 1, 2, 2, 1], 
+                vec![2, 1, 1, 2, 1, 1, 2], 
+                vec![1, 2, 2, 1, 2, 2, 1]
+              ];
+  let (res, game_state) = solve_board(grid6, 4, 2);
+  assert_eq!(res, 6);
+  assert_eq!(game_state, "Draw");
 }

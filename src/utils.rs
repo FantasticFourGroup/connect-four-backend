@@ -1,4 +1,5 @@
 use std::cmp;
+use std::collections::HashMap;
 
 enum GameState {
   Win, 
@@ -193,6 +194,16 @@ fn is_draw(grid: &Vec<Vec<usize>>) -> bool {
   false
 }
 
+fn compute_hash(grid: &Vec<Vec<usize>>) -> usize {
+  let mut hash = 0;
+  for i in 0..grid.len() {
+    for j in 0..grid[0].len() {
+      hash += grid[i][j] * (i * grid[0].len() + j + 1);
+    }
+  }
+  hash
+}
+
 fn minimax(
   grid: Vec<Vec<usize>>, 
   depth: usize, 
@@ -200,8 +211,16 @@ fn minimax(
   ai_piece: usize,
   is_mini: bool,
   mut alpha: isize,
-  mut beta: isize
+  mut beta: isize,
+  hash_table: &mut HashMap<usize, Option<usize>>,
+  max_depth: usize,
 ) -> (Option<usize>, isize, GameState) {
+  let hash = compute_hash(&grid);
+
+  if let Some(column) = hash_table.get(&hash) {
+    return (column.clone(), 0, GameState::Playing);
+  }
+
   let valid_cols = get_valid_columns(&grid);
   if valid_cols.len() == 0 {
     return (None, 0, GameState::Draw);
@@ -229,7 +248,7 @@ fn minimax(
     for col in valid_cols {
       let mut new_grid = grid.clone();
       drop_piece(&mut new_grid, col, player_piece);
-      let (_, new_score, _) = minimax(new_grid, depth - 1, player_piece, ai_piece, false, alpha, beta);
+      let (_, new_score, _) = minimax(new_grid, depth - 1, player_piece, ai_piece, false, alpha, beta, hash_table, max_depth);
       if new_score < best_score {
         best_score = new_score;
         best_col = col;
@@ -239,6 +258,9 @@ fn minimax(
         break;
       }
     }
+    if depth == max_depth {
+      hash_table.insert(hash, Some(best_col));
+    }
     return (Some(best_col), best_score, GameState::Playing);
   }
   else {
@@ -247,7 +269,7 @@ fn minimax(
     for col in valid_cols {
       let mut new_grid = grid.clone();
       drop_piece(&mut new_grid, col, ai_piece);
-      let (_, new_score, _) = minimax(new_grid, depth - 1, player_piece, ai_piece, true, alpha, beta);
+      let (_, new_score, _) = minimax(new_grid, depth - 1, player_piece, ai_piece, true, alpha, beta, hash_table, max_depth);
       if new_score > best_score {
         best_score = new_score;
         best_col = col;
@@ -256,6 +278,9 @@ fn minimax(
       if beta <= alpha {
         break;
       }
+    }
+    if depth == max_depth {
+      hash_table.insert(hash, Some(best_col));
     }
     return (Some(best_col), best_score, GameState::Playing);
   }
@@ -274,13 +299,20 @@ pub fn solve_board(grid: Vec<Vec<usize>>, depth: usize, ai_piece: usize) -> (usi
 
   let mut grid_copy = grid.clone();
 
-  let (col, _, game_state) = minimax(grid, depth, player_piece, ai_piece, false, isize::MIN, isize::MAX);
+  let mut hash_table: HashMap<usize, Option<usize>> = HashMap::new();
+
+  let max_depth = depth;
+
+  let (col, _, game_state) = minimax(grid, depth, player_piece, ai_piece, false, isize::MIN, isize::MAX, &mut hash_table, max_depth);
 
   match col {
     Some(c) => {
       drop_piece(&mut grid_copy, c, ai_piece);
       if check_winner(&grid_copy, ai_piece) {
         return (c, "Lose".to_string());
+      }
+      else if is_draw(&grid_copy) {
+        return (c, "Draw".to_string());
       }
       else {
         return (c, game_state.to_string());

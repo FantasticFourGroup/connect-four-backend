@@ -248,6 +248,17 @@ fn minimax(
     for col in valid_cols {
       let mut new_grid = grid.clone();
       drop_piece(&mut new_grid, col, player_piece);
+      if check_game_over(&new_grid) {
+        if check_winner(&new_grid, ai_piece) {
+          return (Some(col), 1000000, GameState::Lose);
+        }
+        else if check_winner(&new_grid, player_piece) {
+          return (Some(col), -1000000, GameState::Win);
+        }
+        else {
+          return (Some(col), 0, GameState::Draw);
+        }
+      }
       let (_, new_score, _) = minimax(new_grid, depth - 1, player_piece, ai_piece, false, alpha, beta, hash_table, max_depth);
       if new_score < best_score {
         best_score = new_score;
@@ -269,6 +280,17 @@ fn minimax(
     for col in valid_cols {
       let mut new_grid = grid.clone();
       drop_piece(&mut new_grid, col, ai_piece);
+      if check_game_over(&new_grid) {
+        if check_winner(&new_grid, ai_piece) {
+          return (Some(col), 1000000, GameState::Lose);
+        }
+        else if check_winner(&new_grid, player_piece) {
+          return (Some(col), -1000000, GameState::Win);
+        }
+        else {
+          return (Some(col), 0, GameState::Draw);
+        }
+      }
       let (_, new_score, _) = minimax(new_grid, depth - 1, player_piece, ai_piece, true, alpha, beta, hash_table, max_depth);
       if new_score > best_score {
         best_score = new_score;

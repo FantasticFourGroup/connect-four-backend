@@ -175,4 +175,15 @@ fn test_solve_board() {
   let (res, game_state) = solve_board(grid6, 4, 2);
   assert_eq!(res, 6);
   assert_eq!(game_state, "Draw");
+
+  let grid7 = vec![
+                vec![0, 0, 0, 0, 0, 0, 0], 
+                vec![0, 0, 0, 0, 0, 0, 0], 
+                vec![0, 0, 0, 0, 0, 0, 0],
+                vec![1, 0, 0, 2, 0, 0, 0], 
+                vec![1, 1, 0, 2, 2, 0, 0], 
+                vec![1, 1, 1, 2, 2, 0, 0]
+              ];
+  let (res, _) = solve_board(grid7, 4, 2);
+  assert_eq!(res, 3);
 }

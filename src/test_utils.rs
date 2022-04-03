@@ -93,18 +93,12 @@ fn test_score_array() {
   assert_eq!(score_array(&arr6, 1), -100);
 }
 
-#[test]
-fn test_calc_heuristic() {
-  let grid1 = vec![vec![0, 0, 0, 0], vec![0, 0, 0, 0], vec![0, 0, 0, 0], vec![0, 0, 0, 0]];
-  assert_eq!(calc_heuristic(&grid1, 1), 0);
-  let grid2 = vec![vec![0, 0, 0, 0], vec![0, 0, 0, 0], vec![0, 2, 2, 0], vec![0, 2, 1, 1]];
-  assert_eq!(calc_heuristic(&grid2, 2), 2);
-  let grid3 = vec![vec![0, 0, 0, 0], vec![0, 2, 0, 0], vec![0, 2, 2, 0], vec![0, 2, 1, 1]];
-  assert_eq!(calc_heuristic(&grid3, 2), 6);
-  let grid4 = vec![vec![0, 0, 0, 0], vec![0, 2, 0, 0], vec![0, 2, 0, 1], vec![0, 2, 2, 1]];
-  assert_eq!(calc_heuristic(&grid4, 1), -7);
-  let grid5 = vec![vec![0, 0, 0, 0], vec![0, 0, 0, 0], vec![0, 1, 0, 0], vec![0, 2, 2, 0]];
-  assert_eq!(calc_heuristic(&grid5, 1), -4);
+#[test] 
+fn test_calc_position() {
+  assert_eq!(calc_board_position(6, 7, 3, 3), 6);
+  assert_eq!(calc_board_position(6, 7, 3, 2), 5);
+  assert_eq!(calc_board_position(6, 7, 0, 0), 0);
+  assert_eq!(calc_board_position(6, 7, 5, 6), 1);
 }
 
 #[test]
@@ -140,7 +134,7 @@ fn test_solve_board() {
                 vec![0, 0, 0, 1, 1, 0, 0]
               ];
   let (res, _) = solve_board(board3, 4, 2);
-  assert_eq!(res, 2);
+  assert_eq!(res, 5);
 
   let board4 = vec![
                 vec![0, 0, 0, 0, 0, 0, 0], 

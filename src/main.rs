@@ -19,7 +19,7 @@ struct Response {
 
 #[get("/")]
 async fn hello() -> impl Responder {
-  HttpResponse::Ok().body("Hello hans!")
+  HttpResponse::Ok().body("Hello World!")
 }
 
 #[post("/echo")]

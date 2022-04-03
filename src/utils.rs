@@ -108,19 +108,63 @@ fn score_array(arr: &Vec<usize>, turn: usize) -> isize {
   score
 }
 
+fn calc_board_position(grid_row: isize, grid_col: isize, row: isize, col: isize) -> usize {
+  let mid_row: isize;
+  let mid_col: isize;
+
+  if grid_row % 2 != 0 {
+    mid_row = grid_row / 2;
+  }
+  else {
+    let upper = grid_row / 2;
+    let lower = upper - 1;
+
+    if (row - lower).abs() < (row - upper).abs() {
+      mid_row = lower;
+    }
+    else {
+      mid_row = upper;
+    }
+  }
+
+  if grid_col % 2 != 0 {
+    mid_col = grid_col / 2;
+  }
+  else {
+    let upper = grid_row / 2;
+    let lower = upper - 1;
+
+    if (col - lower).abs() < (col - upper).abs() {
+      mid_col = lower;
+    }
+    else {
+      mid_col = upper;
+    }
+  }
+
+  let row_diff = (row - mid_row).abs();	
+  let col_diff = (col - mid_col).abs();
+
+  let res = (mid_row + mid_col) - (row_diff + col_diff);
+
+  res as usize
+}
+
 fn calc_heuristic(grid: &Vec<Vec<usize>>, turn: usize) -> isize {
   let mut heuristic = 0;
   let rows = grid.len();
   let cols = grid[0].len();
 
-  let center_col = cols / 2;
   for i in 0..rows {
-    if grid[i][center_col] == turn {
-      heuristic += 3;
-    }
-    let opp_turn = if turn == 1 { 2 } else { 1 };
-    if grid[i][center_col] == opp_turn {
-      heuristic -= 3;
+    for j in 0..cols {
+      let pos = calc_board_position(rows as isize, cols as isize, i as isize, j as isize);
+      if grid[i][j] == turn {
+        heuristic += pos as isize;
+      }
+      let opp_turn = if turn == 1 { 2 } else { 1 };
+      if grid[i][j] == opp_turn {
+        heuristic -= pos as isize;
+      }
     }
   }
 

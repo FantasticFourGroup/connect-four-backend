@@ -1,5 +1,7 @@
 use std::cmp;
 use std::collections::HashMap;
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
 
 enum GameState {
   Win, 
@@ -90,19 +92,19 @@ fn score_array(arr: &Vec<usize>, turn: usize) -> isize {
     score += 100;
   } 
   else if count == 3 && empty_count == 1 {
-    score += 5;
+    score += 30;
   } 
   else if count == 2 && empty_count == 2 {
-    score += 1;
+    score += 10;
   }
   if opp_count == 4 {
     score -= 100;
   }
   else if opp_count == 3 && empty_count == 1 {
-    score -= 5;
+    score -= 30;
   } 
   else if opp_count == 2 && empty_count == 2 {
-    score -= 1;
+    score -= 10;
   }
 
   score
@@ -238,14 +240,10 @@ fn is_draw(grid: &Vec<Vec<usize>>) -> bool {
   false
 }
 
-fn compute_hash(grid: &Vec<Vec<usize>>) -> usize {
-  let mut hash = 0;
-  for i in 0..grid.len() {
-    for j in 0..grid[0].len() {
-      hash += grid[i][j] * (i * grid[0].len() + j + 1);
-    }
-  }
-  hash
+fn compute_hash(grid: &Vec<Vec<usize>>) -> u64 {
+  let mut hasher = DefaultHasher::new();
+  grid.hash(&mut hasher);
+  hasher.finish()
 }
 
 fn minimax(
@@ -256,15 +254,9 @@ fn minimax(
   is_mini: bool,
   mut alpha: isize,
   mut beta: isize,
-  hash_table: &mut HashMap<usize, Option<usize>>,
+  hash_table: &mut HashMap<u64, isize>,
   max_depth: usize,
 ) -> (Option<usize>, isize, GameState) {
-  let hash = compute_hash(&grid);
-
-  if let Some(column) = hash_table.get(&hash) {
-    return (column.clone(), 0, GameState::Playing);
-  }
-
   let valid_cols = get_valid_columns(&grid);
   if valid_cols.len() == 0 {
     return (None, 0, GameState::Draw);
@@ -303,18 +295,26 @@ fn minimax(
           return (Some(col), 0, GameState::Draw);
         }
       }
-      let (_, new_score, _) = minimax(new_grid, depth - 1, player_piece, ai_piece, false, alpha, beta, hash_table, max_depth);
-      if new_score < best_score {
-        best_score = new_score;
-        best_col = col;
+      let hash = compute_hash(&new_grid);
+      if hash_table.contains_key(&hash) {
+        let score = hash_table[&hash];
+        if score < best_score {
+          best_score = score;
+          best_col = col;
+        }
+      }
+      else {
+        let (_, score, _) = minimax(new_grid, depth - 1, player_piece, ai_piece, false, alpha, beta, hash_table, max_depth);
+        if score < best_score {
+          best_score = score;
+          best_col = col;
+        }
+        hash_table.insert(hash, score);
       }
       beta = cmp::min(beta, best_score);
       if beta <= alpha {
         break;
       }
-    }
-    if depth == max_depth {
-      hash_table.insert(hash, Some(best_col));
     }
     return (Some(best_col), best_score, GameState::Playing);
   }
@@ -335,18 +335,26 @@ fn minimax(
           return (Some(col), 0, GameState::Draw);
         }
       }
-      let (_, new_score, _) = minimax(new_grid, depth - 1, player_piece, ai_piece, true, alpha, beta, hash_table, max_depth);
-      if new_score > best_score {
-        best_score = new_score;
-        best_col = col;
+      let hash = compute_hash(&new_grid);
+      if hash_table.contains_key(&hash) {
+        let score = hash_table[&hash];
+        if score > best_score {
+          best_score = score;
+          best_col = col;
+        }
+      }
+      else {
+        let (_, score, _) = minimax(new_grid, depth - 1, player_piece, ai_piece, true, alpha, beta, hash_table, max_depth);
+        if score > best_score {
+          best_score = score;
+          best_col = col;
+        }
+        hash_table.insert(hash, score);
       }
       alpha = cmp::max(alpha, best_score);
       if beta <= alpha {
         break;
       }
-    }
-    if depth == max_depth {
-      hash_table.insert(hash, Some(best_col));
     }
     return (Some(best_col), best_score, GameState::Playing);
   }
@@ -365,7 +373,7 @@ pub fn solve_board(grid: Vec<Vec<usize>>, depth: usize, ai_piece: usize) -> (usi
 
   let mut grid_copy = grid.clone();
 
-  let mut hash_table: HashMap<usize, Option<usize>> = HashMap::new();
+  let mut hash_table: HashMap<u64, isize> = HashMap::new();
 
   let max_depth = depth;
 

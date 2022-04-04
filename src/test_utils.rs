@@ -75,19 +75,19 @@ fn test_valid_columns() {
 #[test] 
 fn test_score_array() {
   let arr1 = vec![1, 1, 0, 0];
-  assert_eq!(score_array(&arr1, 1), 1);
+  assert_eq!(score_array(&arr1, 1), 10);
 
   let arr2 = vec![1, 1, 1, 0];
-  assert_eq!(score_array(&arr2, 1), 5);
+  assert_eq!(score_array(&arr2, 1), 30);
 
   let arr3 = vec![1, 1, 1, 1];
   assert_eq!(score_array(&arr3, 1), 100);
 
   let arr4 = vec![0, 2, 2, 0];
-  assert_eq!(score_array(&arr4, 2), 1);
+  assert_eq!(score_array(&arr4, 2), 10);
 
   let arr5 = vec![0, 2, 2, 2];
-  assert_eq!(score_array(&arr5, 2), 5);
+  assert_eq!(score_array(&arr5, 2), 30);
 
   let arr6 = vec![2, 2, 2, 2];
   assert_eq!(score_array(&arr6, 1), -100);
@@ -123,7 +123,7 @@ fn test_solve_board() {
                 vec![0, 0, 0, 1, 0, 0, 0]
               ];
   let (res, _) = solve_board(board2, 4, 2);
-  assert_eq!(res, 3);
+  assert_eq!(res, 2);
 
   let board3 = vec![
                 vec![0, 0, 0, 0, 0, 0, 0], 
